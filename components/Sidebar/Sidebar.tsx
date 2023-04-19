@@ -61,7 +61,7 @@ const Sidebar = <T,>({
       >
         <div className="flex items-center">
           <button
-            className="text-sidebar flex w-[190px] flex-shrink-0 cursor-pointer select-none items-center gap-3 rounded-md border border-white/20 p-3 text-white transition-colors duration-200 hover:bg-gray-500/10"
+            className="text-sidebar flex w-[190px] flex-shrink-0 cursor-pointer select-none items-center gap-2 rounded-md border border-white/20 p-2 text-white transition-colors duration-200 hover:bg-gray-500/10"
             onClick={() => {
               handleCreateItem();
               handleSearchTerm('');
