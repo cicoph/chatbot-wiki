@@ -23,7 +23,7 @@ export default async function handle(
 // GET /api/user/:id
 async function handleGET(userId, res) {
   const user = await prisma.user.findUnique({
-    where: { id: Number(userId) },
+    where: { id: userId },
     // include: { id: true, name: true, email: true, image: true },
   });
   res.json(user);
@@ -32,7 +32,7 @@ async function handleGET(userId, res) {
 // GET /api/user/:id
 async function handlePOST(userId, res, req) {
   const user = await prisma.user.update({
-    where: { id: Number(userId) },
+    where: { id: userId },
     data: { ...req.body },
   });
   return res.json(user);
@@ -41,7 +41,7 @@ async function handlePOST(userId, res, req) {
 // DELETE /api/user/:id
 async function handleDELETE(userId, res) {
   const user = await prisma.user.delete({
-    where: { id: Number(userId) },
+    where: { id: userId },
   });
   res.json(user);
 }

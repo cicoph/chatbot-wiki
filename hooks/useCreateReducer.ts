@@ -13,7 +13,7 @@ export type ActionType<T> =
 // Returns a typed dispatch and state
 export const useCreateReducer = <T>({ initialState }: { initialState: T }) => {
   type Action =
-    | { type: 'reset' }
+    | { type: 'reset'; field: FieldNames<T>; value: any }
     | { type?: 'change'; field: FieldNames<T>; value: any };
 
   const reducer = (state: T, action: Action) => {
