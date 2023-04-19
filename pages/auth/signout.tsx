@@ -1,4 +1,3 @@
-import { logger } from "../../lib/logger";
 import { GetStaticProps } from "next";
 import { signOut } from "next-auth/react";
 
@@ -7,8 +6,6 @@ interface Props {
 }
 
 export default function logout({ callbackUrl }: Props) {
-  logger.debug(`callbackUrl`);
-  logger.debug(callbackUrl);
   signOut({ callbackUrl });
   return <div></div>;
 }

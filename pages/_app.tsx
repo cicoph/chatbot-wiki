@@ -7,9 +7,13 @@ import { Inter } from 'next/font/google';
 import type { Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 
+import "@fortawesome/fontawesome-svg-core/styles.css";
 import '@/styles/globals.css';
 
+import { config } from "@fortawesome/fontawesome-svg-core";
 const inter = Inter({ subsets: ['latin'] });
+
+config.autoAddCss = false; 
 
 
 function App({

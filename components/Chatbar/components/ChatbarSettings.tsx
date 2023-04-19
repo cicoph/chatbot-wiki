@@ -1,5 +1,6 @@
 import { IconFileExport, IconSettings } from '@tabler/icons-react';
 import { useContext, useState } from 'react';
+import { useRouter } from 'next/router'
 
 import { useTranslation } from 'next-i18next';
 
@@ -13,11 +14,13 @@ import { SidebarButton } from '../../Sidebar/SidebarButton';
 import ChatbarContext from '../Chatbar.context';
 import { ClearConversations } from './ClearConversations';
 import { PluginKeys } from './PluginKeys';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 
 export const ChatbarSettings = () => {
   const { t } = useTranslation('sidebar');
   const [isSettingDialogOpen, setIsSettingDialog] = useState<boolean>(false);
-
+  const router = useRouter()
   const {
     state: {
       apiKey,
@@ -54,6 +57,12 @@ export const ChatbarSettings = () => {
         text={t('Settings')}
         icon={<IconSettings size={18} />}
         onClick={() => setIsSettingDialog(true)}
+      />
+
+      <SidebarButton
+        text={t('Logout')}
+        icon={<FontAwesomeIcon icon={faArrowRightFromBracket} />}
+        onClick={() => router.push('/auth/signout')}
       />
 
       {!serverSideApiKeyIsSet ? (
