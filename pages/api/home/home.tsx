@@ -40,6 +40,10 @@ import HomeContext from './home.context';
 import { HomeInitialState, initialState } from './home.state';
 
 import { v4 as uuidv4 } from 'uuid';
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "@/pages/api/auth/[...nextauth]"
+
+import { Router } from 'next/router';
 
 interface Props {
   serverSideApiKeyIsSet: boolean;
@@ -50,7 +54,7 @@ interface Props {
 const Home = ({
   serverSideApiKeyIsSet,
   serverSidePluginKeysSet,
-  defaultModelId,
+  defaultModelId
 }: Props) => {
   const { t } = useTranslation('chat');
   const { getModels } = useApiService();
@@ -395,7 +399,16 @@ const Home = ({
 };
 export default Home;
 
-export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
+export const getServerSideProps: GetServerSideProps = async ({ locale, req, res }) => {
+  const session = await getServerSession(req, res, authOptions);
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/auth/signin',
+        permanent: false,
+      },
+    }
+  }
   const defaultModelId =
     (process.env.DEFAULT_MODEL &&
       Object.values(OpenAIModelID).includes(
@@ -412,7 +425,7 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
   if (googleApiKey && googleCSEId) {
     serverSidePluginKeysSet = true;
   }
-
+  
   return {
     props: {
       serverSideApiKeyIsSet: !!process.env.OPENAI_API_KEY,
