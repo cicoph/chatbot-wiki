@@ -43,8 +43,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/pages/api/auth/[...nextauth]"
 
-import { Router } from 'next/router';
-
 interface Props {
   serverSideApiKeyIsSet: boolean;
   serverSidePluginKeysSet: boolean;
@@ -402,12 +400,9 @@ export default Home;
 export const getServerSideProps: GetServerSideProps = async ({ locale, req, res }) => {
   const session = await getServerSession(req, res, authOptions);
   if (!session) {
-    return {
-      redirect: {
-        destination: '/auth/signin',
-        permanent: false,
-      },
-    }
+    res.writeHead(302, { Location: "/signin" });
+    res.end();
+    return { props: {} };
   }
   const defaultModelId =
     (process.env.DEFAULT_MODEL &&
