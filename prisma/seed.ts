@@ -9,8 +9,8 @@ const hashPassword = (password: string) => {
 const userData = [
   {
     name: 'Francesco',
-    email: 'test@gmail.com',
-    password: hashPassword('')
+    email: 'francescoloddo@gmail.com',
+    password: hashPassword('@Assist2023')
   }
 ]
 

@@ -19,7 +19,7 @@ export const authOptions: NextAuthOptions = {    // Configure one or more authen
             },
             authorize: async (credentials, req) => {
                 const user = await fetch(
-                    `${process.env.NEXTAUTH_URL}/api/user/check-credentials`,
+                    `${process.env.NEXTAUTH_URL}api/user/check-credentials`,
                     {
                         method: "POST",
                         headers: {
@@ -54,16 +54,14 @@ export const authOptions: NextAuthOptions = {    // Configure one or more authen
     callbacks: {
         jwt: async ({ token, user }) => {
             if (user) {
-              token.email = user.email;
-              token.username = user.name;
+                token.id = user.id
             }
-      
-            return token;
+            return Promise.resolve(token);
         },
-        session: async ({ session, token, user }) => {
-            session.user = token.user;  // Setting token in session
-            return session;
-        },
+        session: async ({ token, user, session }) => {
+            session.user = token;
+            return Promise.resolve(session)
+        }
     }
 }
 

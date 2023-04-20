@@ -42,17 +42,20 @@ import { HomeInitialState, initialState } from './home.state';
 import { v4 as uuidv4 } from 'uuid';
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/pages/api/auth/[...nextauth]"
+import { DefaultAdapter } from 'next-auth/adapters';
 
 interface Props {
   serverSideApiKeyIsSet: boolean;
   serverSidePluginKeysSet: boolean;
   defaultModelId: OpenAIModelID;
+  user: any
 }
 
 const Home = ({
   serverSideApiKeyIsSet,
   serverSidePluginKeysSet,
-  defaultModelId
+  defaultModelId,
+  user
 }: Props) => {
   const { t } = useTranslation('chat');
   const { getModels } = useApiService();
@@ -119,6 +122,7 @@ const Home = ({
       id: uuidv4(),
       name,
       type,
+      userId: user.id
     };
 
     const updatedFolders = [...folders, newFolder];
@@ -196,8 +200,9 @@ const Home = ({
       prompt: DEFAULT_SYSTEM_PROMPT,
       temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
       folderId: null,
+      userId: user.id
     };
-
+    console.log(newConversation)
     const updatedConversations = [...conversations, newConversation];
 
     dispatch({ field: 'selectedConversation', value: newConversation });
@@ -399,7 +404,7 @@ export default Home;
 
 export const getServerSideProps: GetServerSideProps = async ({ locale, req, res }) => {
   const session = await getServerSession(req, res, authOptions);
-  if (!session) {
+  if ( !session.user ) {
     res.writeHead(302, { Location: "/signin" });
     res.end();
     return { props: {} };
@@ -423,6 +428,7 @@ export const getServerSideProps: GetServerSideProps = async ({ locale, req, res 
   
   return {
     props: {
+      user: session.user,
       serverSideApiKeyIsSet: !!process.env.OPENAI_API_KEY,
       defaultModelId,
       serverSidePluginKeysSet,
