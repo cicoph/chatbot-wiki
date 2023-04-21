@@ -15,6 +15,7 @@ import {
   cleanConversationHistory,
   cleanSelectedConversation,
 } from '@/utils/app/clean';
+import { exportGoogleDocs } from '@/utils/app/exportGoogleDocs'
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const';
 import {
   saveConversation,
@@ -163,6 +164,13 @@ const Home = ({
     dispatch({ field: 'prompts', value: updatedPrompts });
     savePrompts(updatedPrompts);
   };
+
+  const handleGoogleExport = async (folderId: string) => {
+    console.log( folderId )
+    dispatch({ field: 'export', value: folderId });
+
+    await exportGoogleDocs( folderId )
+  }
 
   const handleUpdateFolder = (folderId: string, name: string) => {
     const updatedFolders = folders.map((f) => {
@@ -358,6 +366,7 @@ const Home = ({
         ...contextValue,
         handleNewConversation,
         handleCreateFolder,
+        handleGoogleExport,
         handleDeleteFolder,
         handleUpdateFolder,
         handleSelectConversation,

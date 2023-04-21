@@ -14,6 +14,7 @@ export interface HomeInitialState {
   modelError: ErrorMessage | null;
   models: OpenAIModel[];
   folders: FolderInterface[];
+  export: string;
   conversations: Conversation[];
   selectedConversation: Conversation | undefined;
   currentMessage: Message | undefined;
@@ -38,6 +39,7 @@ export const initialState: HomeInitialState = {
   modelError: null,
   models: [],
   folders: [],
+  export: '',
   conversations: [],
   selectedConversation: undefined,
   currentMessage: undefined,

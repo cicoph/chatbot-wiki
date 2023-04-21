@@ -73,28 +73,30 @@ export const exportGoogleDocs = async ( folderId: string ) => {
 
     let history = localStorage.getItem('conversationHistory');
 
-    if (history) {
-        history = JSON.parse(history)
-    }
-
+    if (history.length == 0) return
     let chatConversation = JSON.parse(history) as Conversation[]
+
     if (chatConversation.length == 0) return
 
-    const folder = chatFolder.find( folder => folder.id == folderId )
+    const folder = chatFolder.find(folder => folder.id == folderId)
+    const conversations = chatConversation.filter( conv => conv.folderId == folderId )
     const folderName = folder.name
-    const contentArray = []
-    chatConversation.map(conversation => {
-        const { name, messages } = conversation
-        const filterMessage = messages.filter(message => message.role == 'assistant')
-        filterMessage.map(mess => {
-            contentArray[name] =+ mess.content 
-        })
+    const discussion = []
+    conversations.forEach( conversation => {
+        const { messages, name: title } = conversation
+        const content = messages.filter( m => m.role == 'assistant' ).map( m => m.content ).reverse()
+        discussion.push({
+            title,
+            content
+        } )
     })
+
     const data = {
         folderName,
-        content: contentArray
-    } as any;
-    await fetch('/api/user/docs', {
+        discussion: discussion.reverse()
+    }
+
+    await fetch('/api/user/export-google', {
         body: JSON.stringify(data),
         headers: { 'Content-type': 'application/json' },
         method: 'POST'

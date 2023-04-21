@@ -11,7 +11,8 @@ import { HomeInitialState } from './home.state';
 export interface HomeContextProps {
   state: HomeInitialState;
   dispatch: Dispatch<ActionType<HomeInitialState>>;
-  handleNewConversation: () => void;
+  handleNewConversation: () => void; 
+  handleGoogleExport: (name: string) => void;
   handleCreateFolder: (name: string, type: FolderType) => void;
   handleDeleteFolder: (folderId: string) => void;
   handleUpdateFolder: (folderId: string, name: string) => void;

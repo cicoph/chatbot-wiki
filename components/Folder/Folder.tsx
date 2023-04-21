@@ -19,6 +19,8 @@ import { FolderInterface } from '@/types/folder';
 import HomeContext from '@/pages/api/home/home.context';
 
 import SidebarActionButton from '@/components/Buttons/SidebarActionButton';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFileWord } from '@fortawesome/free-solid-svg-icons';
 
 interface Props {
   currentFolder: FolderInterface;
@@ -33,7 +35,7 @@ const Folder = ({
   handleDrop,
   folderComponent,
 }: Props) => {
-  const { handleDeleteFolder, handleUpdateFolder } = useContext(HomeContext);
+  const { handleDeleteFolder, handleUpdateFolder, handleGoogleExport } = useContext(HomeContext);
 
   const [isDeleting, setIsDeleting] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
@@ -163,6 +165,14 @@ const Folder = ({
 
         {!isDeleting && !isRenaming && (
           <div className="absolute right-1 z-10 flex text-gray-300">
+            {currentFolder.type != 'prompt' && <SidebarActionButton
+              handleClick={(e) => {
+                e.stopPropagation();
+                handleGoogleExport(currentFolder.id)
+              }}
+            >
+              <FontAwesomeIcon icon={faFileWord} />
+            </SidebarActionButton>}
             <SidebarActionButton
               handleClick={(e) => {
                 e.stopPropagation();
