@@ -121,8 +121,7 @@ const Home = ({
     const newFolder: FolderInterface = {
       id: uuidv4(),
       name,
-      type,
-      userId: user.id
+      type
     };
 
     const updatedFolders = [...folders, newFolder];
@@ -200,7 +199,6 @@ const Home = ({
       prompt: DEFAULT_SYSTEM_PROMPT,
       temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
       folderId: null,
-      userId: user.id
     };
     console.log(newConversation)
     const updatedConversations = [...conversations, newConversation];

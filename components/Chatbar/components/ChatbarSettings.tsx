@@ -1,4 +1,4 @@
-import { IconFileExport, IconSettings } from '@tabler/icons-react';
+import { IconFileExport, IconSettings, IconFileImport } from '@tabler/icons-react';
 import { useContext, useState } from 'react';
 import { useRouter } from 'next/router'
 
@@ -15,7 +15,7 @@ import ChatbarContext from '../Chatbar.context';
 import { ClearConversations } from './ClearConversations';
 import { PluginKeys } from './PluginKeys';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRightFromBracket, faDownload, faUpload } from '@fortawesome/free-solid-svg-icons';
 
 export const ChatbarSettings = () => {
   const { t } = useTranslation('sidebar');
@@ -36,6 +36,8 @@ export const ChatbarSettings = () => {
     handleClearConversations,
     handleImportConversations,
     handleExportData,
+    handleExportDataCloud,
+    handleImportCloudConversations,
     handleApiKeyChange,
   } = useContext(ChatbarContext);
 
@@ -44,6 +46,18 @@ export const ChatbarSettings = () => {
       {conversations.length > 0 ? (
         <ClearConversations onClearConversations={handleClearConversations} />
       ) : null}
+
+      <SidebarButton
+        text={t('Import from Cloud')}
+        icon={<FontAwesomeIcon icon={ faDownload } />}
+        onClick={() => handleImportCloudConversations()}
+      />
+
+      <SidebarButton
+        text={t('Export to Cloud')}
+        icon={<FontAwesomeIcon icon={ faUpload } />}
+        onClick={() => handleExportDataCloud()}
+      />
 
       <Import onImport={handleImportConversations} />
 

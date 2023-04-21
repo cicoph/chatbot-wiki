@@ -8,6 +8,7 @@ import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const';
 import { saveConversation, saveConversations } from '@/utils/app/conversation';
 import { saveFolders } from '@/utils/app/folders';
 import { exportData, importData } from '@/utils/app/importExport';
+import { exportDataCloud, importDataCloud } from '@/utils/app/sync';
 
 import { Conversation } from '@/types/chat';
 import { LatestExportFormat, SupportedExportFormats } from '@/types/export';
@@ -94,8 +95,25 @@ export const Chatbar = () => {
     localStorage.setItem('pluginKeys', JSON.stringify(updatedPluginKeys));
   };
 
+  const handleExportDataCloud = () => {
+    exportDataCloud();
+  };
+
   const handleExportData = () => {
     exportData();
+  };
+
+  const handleImportCloudConversations = async () => {
+    const { history, folders, prompts } = await importDataCloud();
+    homeDispatch({ field: 'conversations', value: history });
+    homeDispatch({
+      field: 'selectedConversation',
+      value: history[history.length - 1],
+    });
+    homeDispatch({ field: 'folders', value: folders });
+    homeDispatch({ field: 'prompts', value: prompts });
+
+    window.location.reload();
   };
 
   const handleImportConversations = (data: SupportedExportFormats) => {
@@ -212,6 +230,8 @@ export const Chatbar = () => {
         ...chatBarContextValue,
         handleDeleteConversation,
         handleClearConversations,
+        handleImportCloudConversations,
+        handleExportDataCloud,
         handleImportConversations,
         handleExportData,
         handlePluginKeyChange,
