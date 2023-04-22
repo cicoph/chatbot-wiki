@@ -41,11 +41,11 @@ export default async function handle(
         );
     }
     if (req.method === "POST") {
-        return await handlePOST({req, res});
+        return await handlePOST({ req, res });
     } else if (req.method === "GET") {
-        return await handleGET( {res} )
+        return await handleGET({ res })
     } else if (req.method === "DELETE") {
-        return await handleDELETE({res});
+        return await handleDELETE({ res });
     } else {
         throw new Error(
             `The HTTP ${req.method} method is not supported at this route.`,
@@ -53,7 +53,7 @@ export default async function handle(
     }
 }
 
-async function handleGET( { res } ) {
+async function handleGET({ res }) {
     return res.json({}).end()
 }
 // GET /api/user/:id
@@ -62,51 +62,107 @@ async function handlePOST({ req, res }) {
     const folderId = await createFolder(folderName) as string
     const documentId = await createDocument({ title: `Doc per ${folderName}`, discussion })
     const id = await moveDocToFolder({ documentId, folderId })
-    return id ? res.status(200).json({id}) : res.status(404).json({message: 'file not found'})
+    return id ? res.status(200).json({ id }) : res.status(404).json({ message: 'file not found' })
 }
 
 // DELETE /api/user/:id
-async function handleDELETE({res}) {
+async function handleDELETE({ res }) {
 
 }
 
-const createDocument = async ({ title, discussion }: { title: string, discussion: any } ) => {
-    const createResponse = await docs.documents.create({
-        requestBody: {
-            title
-        },
-    });
-    const { documentId } = createResponse.data
-    let requests = []
-    discussion.map((section , i) => {
-        const { title, content } = section as { title: string, content: string[] }
-        const titleFormatted = {
-            insertText: {
-                location: {
-                  index: 1
+const createDocument = async ({ title, discussion }: { title: string, discussion: any }) => {
+    
+    try {
+        const createResponse = await docs.documents.create({
+            requestBody: {
+                title
+            },
+        });
+        const { documentId } = createResponse.data
+        let totalCount = 1
+        let requests = []
+        discussion.reverse().forEach(async (section, i) => {
+            // if (i > 0) return
+            const { title, content } = section as { title: string, content: string[] }
+            // const paragraghFormatted = content.reverse().map((p, index, pOld) => {
+            //     count += index == 0 ? totalCount + title.length : totalCount
+            //     totalCount += p.length
+            //     return {
+            //         insertText: {
+            //             lunghezza : p.length,
+            //             location: {
+            //                 index: count
+            //             },
+            //             text: `${p}\n`
+            //         }
+            //     }
+            // })
+            const paragraghFormatted = content.reverse().join('\n\n')
+            // const titleToPush = i > 0 ? {
+            //     insertText: {
+            //         location: {
+            //             index: totalCount,
+            //         },
+            //         text: `${title}\n\n`
+            //     }
+            // } : {
+            //     insertText: {
+            //         endOfSegmentLocation: {},
+            //         text: `${title}\n\n`
+            //     } 
+            // }
+            const partialRequest = [
+                {
+                    insertText: {
+                        location: {
+                            index: totalCount,
+                        },
+                        text: `${title}\n\n`
+                    }
                 },
-                text: `${title}\n`
-            }
-        }
-        const paragraghFormatted = content.map((p, index) => {
-            return {
-                insertText: {
-                    location: {
-                      index: 1
-                    },
-                    text: `${p}\n`
-                }  
-            }
+                {
+                    insertText: {
+                        location: {
+                            index: title.length + totalCount + 1,
+                        },
+                        text: `${paragraghFormatted}\n\n\n`
+                    }
+                },
+                {
+                    updateTextStyle: {
+                        textStyle: {
+                            weightedFontFamily: {
+                              fontFamily: 'Roboto',
+                              weight: 900
+                            },
+                            fontSize: {
+                              magnitude: 18,
+                              unit: 'PT'
+                            }
+                        },
+                        range: {
+                            startIndex: totalCount,
+                            endIndex: title.length + totalCount
+                        },
+                        fields: "weightedFontFamily,fontSize"
+                    }
+                },
+            ]
+            totalCount += paragraghFormatted.length + title.length + 3
+            requests.push( ...partialRequest)
         })
-        requests.push(...(paragraghFormatted).concat([titleFormatted]) )
-    })
-    await docs.documents.batchUpdate({
-        documentId,
-        requestBody: {
-            requests
-          }
-    });
-    return documentId
+        // console.log(totalCount)
+        // console.log( requests )
+        await docs.documents.batchUpdate({
+            documentId,
+            requestBody: {
+                requests
+            }
+        });
+        return documentId
+    } catch (error) {
+        console.log(error.message)
+    }
 }
 
 const createFolder = async (folderName: string) => {
@@ -132,12 +188,12 @@ const moveDocToFolder = async ({ documentId, folderId }: { documentId: string, f
         fileId: documentId,
         fields: "parents"
     })
-    .then(res => res.data.parents[0])
-    .catch(err => {
-        console.log('#1002 - The API returned an error:' + err);
-        return false
-    })
-    if( !file ) return null
+        .then(res => res.data.parents[0])
+        .catch(err => {
+            console.log('#1002 - The API returned an error:' + err);
+            return false
+        })
+    if (!file) return null
     const result = await drive.files.update({
         fileId: documentId,
         removeParents: oldParent,
@@ -151,7 +207,7 @@ const getFolderId = async (folderName: string): Promise<string | boolean> => {
     const result = await drive.files.list({
         fields: "files(id, name, driveId)",
         q: `name='${folderName} - Contenuti' and '${GOOGLE_DRIVE_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder'`,
-    }).then( response => {
+    }).then(response => {
         const { files } = response.data
         if (files.length == 0) return false
         const folder = files.length > 1 ? files.find(file => file.name == folderName) : files[0]

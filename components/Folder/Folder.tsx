@@ -20,7 +20,7 @@ import HomeContext from '@/pages/api/home/home.context';
 
 import SidebarActionButton from '@/components/Buttons/SidebarActionButton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFileWord } from '@fortawesome/free-solid-svg-icons';
+import { faCircleNotch, faFileWord } from '@fortawesome/free-solid-svg-icons';
 
 interface Props {
   currentFolder: FolderInterface;
@@ -37,6 +37,7 @@ const Folder = ({
 }: Props) => {
   const { handleDeleteFolder, handleUpdateFolder, handleGoogleExport } = useContext(HomeContext);
 
+  const [isSavigDocs, setIsSavigDocs] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState('');
@@ -48,6 +49,15 @@ const Folder = ({
       handleRename();
     }
   };
+
+  const handleGenerateDocs = async () => {
+    setIsSavigDocs( true )
+    await handleGoogleExport(currentFolder.id).then(( result ) => {
+      console.log( result )
+    })
+    setIsSavigDocs( false )
+    //})
+  }
 
   const handleRename = () => {
     handleUpdateFolder(currentFolder.id, renameValue);
@@ -165,14 +175,18 @@ const Folder = ({
 
         {!isDeleting && !isRenaming && (
           <div className="absolute right-1 z-10 flex text-gray-300">
-            {currentFolder.type != 'prompt' && <SidebarActionButton
-              handleClick={(e) => {
+            {currentFolder.type != 'prompt' && !isSavigDocs ? <SidebarActionButton
+              handleClick={ async (e) => {
                 e.stopPropagation();
-                handleGoogleExport(currentFolder.id)
+                await handleGenerateDocs()
               }}
             >
               <FontAwesomeIcon icon={faFileWord} />
-            </SidebarActionButton>}
+            </SidebarActionButton> :
+              <button className='min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100'>
+                <FontAwesomeIcon className="animate-spin" icon={faCircleNotch} />
+              </button>
+            }
             <SidebarActionButton
               handleClick={(e) => {
                 e.stopPropagation();

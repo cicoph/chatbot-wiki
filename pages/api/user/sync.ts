@@ -17,11 +17,11 @@ export default async function handle(
     );
   }
   if (req.method === "GET") {
-    handleGET(user.id, res);
+    await handleGET(user.id, res);
   } else if (req.method === "POST") {
-    handlePOST(user.id, res, req);
+    await handlePOST(user.id, res, req);
   } else if (req.method === "DELETE") {
-    handleDELETE(user.id, res);
+    await handleDELETE(user.id, res);
   } else {
     throw new Error(
       `The HTTP ${req.method} method is not supported at this route.`,
@@ -34,7 +34,7 @@ async function handleGET(userId, res) {
   const conversation = await prisma.conversation.findUnique({
     where: { authorId: userId },
   });
-  return res.json(conversation).end();
+  return res.json(conversation);
 }
 
 // GET /api/user/:id
@@ -46,7 +46,7 @@ async function handlePOST(userId, res, req) {
     create: { ...data },
     update: { ...data }
   });
-  return res.json(conversation).end();
+  return res.status(200).json(conversation)
 }
 
 // DELETE /api/user/:id
@@ -54,5 +54,5 @@ async function handleDELETE(userId, res) {
   const conversation = await prisma.conversation.delete({
     where: { authorId: userId },
   });
-  res.json(conversation).end();
+  res.status(200).json(conversation)
 }

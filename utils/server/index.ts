@@ -83,16 +83,21 @@ export const OpenAIStream = async (
       );
     }
   }
-
+  
   const stream = new ReadableStream({
     async start(controller) {
       const onParse = (event: ParsedEvent | ReconnectInterval) => {
         if (event.type === 'event') {
           const data = event.data;
-
           try {
             const json = JSON.parse(data);
             if (json.choices[0].finish_reason != null) {
+              // {
+              //   type: 'event',
+              //   id: undefined,
+              //   event: undefined,
+              //   data: '{"id":"chatcmpl-78EIaBMFQfmQdgHylx1AdzLpE5yUo","object":"chat.completion.chunk","created":1682195944,"model":"gpt-3.5-turbo-0301","choices":[{"delta":{},"index":0,"finish_reason":"stop"}]}'
+              // }
               controller.close();
               return;
             }

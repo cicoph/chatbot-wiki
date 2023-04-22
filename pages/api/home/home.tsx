@@ -166,10 +166,8 @@ const Home = ({
   };
 
   const handleGoogleExport = async (folderId: string) => {
-    console.log( folderId )
     dispatch({ field: 'export', value: folderId });
-
-    await exportGoogleDocs( folderId )
+    return await exportGoogleDocs( folderId ).then(result => result)
   }
 
   const handleUpdateFolder = (folderId: string, name: string) => {
@@ -208,7 +206,7 @@ const Home = ({
       temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
       folderId: null,
     };
-    console.log(newConversation)
+
     const updatedConversations = [...conversations, newConversation];
 
     dispatch({ field: 'selectedConversation', value: newConversation });
