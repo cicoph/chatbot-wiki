@@ -56,7 +56,6 @@ const Folder = ({
       console.log( result )
     })
     setIsSavigDocs( false )
-    //})
   }
 
   const handleRename = () => {
@@ -175,7 +174,7 @@ const Folder = ({
 
         {!isDeleting && !isRenaming && (
           <div className="absolute right-1 z-10 flex text-gray-300">
-            {currentFolder.type != 'prompt' && !isSavigDocs ? <SidebarActionButton
+            {currentFolder.type != 'prompt' && ( !isSavigDocs ? <SidebarActionButton
               handleClick={ async (e) => {
                 e.stopPropagation();
                 await handleGenerateDocs()
@@ -186,7 +185,7 @@ const Folder = ({
               <button className='min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100'>
                 <FontAwesomeIcon className="animate-spin" icon={faCircleNotch} />
               </button>
-            }
+            )}
             <SidebarActionButton
               handleClick={(e) => {
                 e.stopPropagation();
