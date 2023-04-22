@@ -6,7 +6,7 @@ interface Props {
   callbackUrl: string;
 }
 
-export default function logout({ callbackUrl }: Props) {
+export default function SignOut({ callbackUrl }: Props) {
   useEffect(() => {
     const logout = async () => {
       await signOut({ callbackUrl });
