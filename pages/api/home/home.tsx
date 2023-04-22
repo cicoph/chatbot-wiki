@@ -15,6 +15,7 @@ import {
   cleanConversationHistory,
   cleanSelectedConversation,
 } from '@/utils/app/clean';
+import { exportGoogleDocs } from '@/utils/app/exportGoogleDocs'
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const';
 import {
   saveConversation,
@@ -42,17 +43,20 @@ import { HomeInitialState, initialState } from './home.state';
 import { v4 as uuidv4 } from 'uuid';
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/pages/api/auth/[...nextauth]"
+import { DefaultAdapter } from 'next-auth/adapters';
 
 interface Props {
   serverSideApiKeyIsSet: boolean;
   serverSidePluginKeysSet: boolean;
   defaultModelId: OpenAIModelID;
+  user: any
 }
 
 const Home = ({
   serverSideApiKeyIsSet,
   serverSidePluginKeysSet,
-  defaultModelId
+  defaultModelId,
+  user
 }: Props) => {
   const { t } = useTranslation('chat');
   const { getModels } = useApiService();
@@ -118,7 +122,7 @@ const Home = ({
     const newFolder: FolderInterface = {
       id: uuidv4(),
       name,
-      type,
+      type
     };
 
     const updatedFolders = [...folders, newFolder];
@@ -160,6 +164,11 @@ const Home = ({
     dispatch({ field: 'prompts', value: updatedPrompts });
     savePrompts(updatedPrompts);
   };
+
+  const handleGoogleExport = async (folderId: string) => {
+    dispatch({ field: 'export', value: folderId });
+    return await exportGoogleDocs( folderId ).then(result => result)
+  }
 
   const handleUpdateFolder = (folderId: string, name: string) => {
     const updatedFolders = folders.map((f) => {
@@ -355,6 +364,7 @@ const Home = ({
         ...contextValue,
         handleNewConversation,
         handleCreateFolder,
+        handleGoogleExport,
         handleDeleteFolder,
         handleUpdateFolder,
         handleSelectConversation,
@@ -399,7 +409,7 @@ export default Home;
 
 export const getServerSideProps: GetServerSideProps = async ({ locale, req, res }) => {
   const session = await getServerSession(req, res, authOptions);
-  if (!session) {
+  if ( !session.user ) {
     res.writeHead(302, { Location: "/signin" });
     res.end();
     return { props: {} };
@@ -423,6 +433,7 @@ export const getServerSideProps: GetServerSideProps = async ({ locale, req, res 
   
   return {
     props: {
+      user: session.user,
       serverSideApiKeyIsSet: !!process.env.OPENAI_API_KEY,
       defaultModelId,
       serverSidePluginKeysSet,

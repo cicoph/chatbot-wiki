@@ -1,12 +1,18 @@
 import { GetStaticProps } from "next";
 import { signOut } from "next-auth/react";
+import { useEffect } from "react";
 
 interface Props {
   callbackUrl: string;
 }
 
 export default function logout({ callbackUrl }: Props) {
-  signOut({ callbackUrl });
+  useEffect(() => {
+    const logout = async () => {
+      await signOut({ callbackUrl });
+    }
+    logout()
+  }, [])
   return <div></div>;
 }
 
