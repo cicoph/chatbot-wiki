@@ -2,12 +2,7 @@ import { google } from "googleapis";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/pages/api/auth/[...nextauth]"
-import { DefaultAdapter } from 'next-auth/adapters';
 
-type ApiResReq = {
-    res: NextApiResponse,
-    req: NextApiRequest
-}
 const { GOOGLE_DRIVE_FOLDER_ID, GOOGLE_CLIENT_EMAIL, GOOGLE_PRIVATE_KEY } = process.env
 
 const authDrive = new google.auth.JWT(
@@ -59,8 +54,9 @@ async function handleGET({ res }) {
 // GET /api/user/:id
 async function handlePOST({ req, res }) {
     const { folderName, discussion } = req.body
-    const folderId = await createFolder(folderName) as string
-    const documentId = await createDocument({ title: `Doc per ${folderName}`, discussion })
+    const folderId = await createFolder(folderName)
+    if( folderId === '' ) return
+    const documentId = await createDocument({ title: `${folderName}`, folderId, discussion })
     const id = await moveDocToFolder({ documentId, folderId })
     return id ? res.status(200).json({ id }) : res.status(404).json({ message: 'file not found' })
 }
@@ -70,47 +66,20 @@ async function handleDELETE({ res }) {
 
 }
 
-const createDocument = async ({ title, discussion }: { title: string, discussion: any }) => {
-    
+const createDocument = async ({ title, folderId, discussion }: { title: string, folderId: string, discussion: any }) => {
+    const getVersion = await getVersionDoc( `${title}_v`, folderId )
     try {
         const createResponse = await docs.documents.create({
             requestBody: {
-                title
+                title: `${title}_v${getVersion}`
             },
         });
         const { documentId } = createResponse.data
         let totalCount = 1
         let requests = []
         discussion.reverse().forEach(async (section, i) => {
-            // if (i > 0) return
             const { title, content } = section as { title: string, content: string[] }
-            // const paragraghFormatted = content.reverse().map((p, index, pOld) => {
-            //     count += index == 0 ? totalCount + title.length : totalCount
-            //     totalCount += p.length
-            //     return {
-            //         insertText: {
-            //             lunghezza : p.length,
-            //             location: {
-            //                 index: count
-            //             },
-            //             text: `${p}\n`
-            //         }
-            //     }
-            // })
             const paragraghFormatted = content.reverse().join('\n\n')
-            // const titleToPush = i > 0 ? {
-            //     insertText: {
-            //         location: {
-            //             index: totalCount,
-            //         },
-            //         text: `${title}\n\n`
-            //     }
-            // } : {
-            //     insertText: {
-            //         endOfSegmentLocation: {},
-            //         text: `${title}\n\n`
-            //     } 
-            // }
             const partialRequest = [
                 {
                     insertText: {
@@ -151,8 +120,6 @@ const createDocument = async ({ title, discussion }: { title: string, discussion
             totalCount += paragraghFormatted.length + title.length + 3
             requests.push( ...partialRequest)
         })
-        // console.log(totalCount)
-        // console.log( requests )
         await docs.documents.batchUpdate({
             documentId,
             requestBody: {
@@ -165,9 +132,9 @@ const createDocument = async ({ title, discussion }: { title: string, discussion
     }
 }
 
-const createFolder = async (folderName: string) => {
+const createFolder = async ( folderName: string ): Promise<string> => {
     const folderId = await getFolderId(folderName)
-    if (!folderId) {
+    if ( !folderId ) {
         const requestBody = {
             name: `${folderName} - Contenuti`,
             parents: [GOOGLE_DRIVE_FOLDER_ID],
@@ -203,18 +170,29 @@ const moveDocToFolder = async ({ documentId, folderId }: { documentId: string, f
     return result.data.id
 }
 
-const getFolderId = async (folderName: string): Promise<string | boolean> => {
-    const result = await drive.files.list({
-        fields: "files(id, name, driveId)",
-        q: `name='${folderName} - Contenuti' and '${GOOGLE_DRIVE_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder'`,
-    }).then(response => {
-        const { files } = response.data
-        if (files.length == 0) return false
-        const folder = files.length > 1 ? files.find(file => file.name == folderName) : files[0]
-        return folder?.id
-    }).catch(err => {
-        console.log('The API returned an error: ' + err);
-        return false;
-    })
-    return result
-}
+const getFolderId = async (folderName: string): Promise<string> => await drive.files.list({
+    fields: "files(id)",
+    q: `name='${folderName} - Contenuti' and '${GOOGLE_DRIVE_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder'`,
+}).then(response => {
+    const { files } = response.data
+    if (files.length == 0) return ''
+    const { id = '' } = files.length > 1 ? files.find(file => file.name == folderName) : files[0]
+    return id
+}).catch(err => {
+    console.log('The API returned an error: ' + err);
+    return '';
+});
+
+
+const getVersionDoc = async (fileName: string, folderId: string): Promise<number> => await drive.files.list({
+    fields: "files(name)",
+    q: `'${folderId}' in parents and mimeType='application/vnd.google-apps.document'`,
+}).then(response => {
+    const { files } = response.data
+    if (files.length == 0) return 1
+    const folder = files.filter(file => file.name.includes(fileName))
+    return folder.length + 1
+}).catch(err => {
+    console.log('The API returned an error: ' + err);
+    return 1;
+})

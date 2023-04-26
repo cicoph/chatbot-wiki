@@ -53,9 +53,9 @@ const Folder = ({
   const handleGenerateDocs = async () => {
     setIsSavigDocs( true )
     await handleGoogleExport(currentFolder.id).then(( result ) => {
-      console.log( result )
+      setIsSavigDocs(false)
+      window.open(`https://docs.google.com/document/d/${result.id}`);
     })
-    setIsSavigDocs( false )
   }
 
   const handleRename = () => {
