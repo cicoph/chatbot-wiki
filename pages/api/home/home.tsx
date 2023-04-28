@@ -409,8 +409,8 @@ export default Home;
 
 export const getServerSideProps: GetServerSideProps = async ({ locale, req, res }) => {
   const session = await getServerSession(req, res, authOptions);
-  if ( !session.user ) {
-    res.writeHead(302, { Location: "/signin" });
+  if ( !session?.user ) {
+    res.writeHead(302, { Location: "/auth/signin" });
     res.end();
     return { props: {} };
   }
