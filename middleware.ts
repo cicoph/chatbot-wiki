@@ -14,4 +14,4 @@ export default withAuth({
   }
 })
 
-export const config = { matcher: ["/"] }
+export const config = { matcher: ["/chat", "/admin", "/dashboard", "/auth/signout"] }
